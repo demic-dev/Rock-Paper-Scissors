@@ -1,4 +1,4 @@
-@import url("https://fonts.google.com/specimen/Barlow+Semi+Condensed");
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed&display=swap");
 
 html,
 body,
@@ -87,6 +87,8 @@ video {
   font-size: 100%;
   font: inherit;
   vertical-align: baseline;
+
+  font-family: 'Barlow Semi Condensed', sans-serif;
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

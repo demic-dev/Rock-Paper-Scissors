@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 
 import MovesButton from "./MovesButton";
 
@@ -10,6 +10,7 @@ import utils from "../utils";
 const StartScreen = ({ handleScore }) => {
   const [playerMove, setPlayerMove] = useState(utils.moves.PLACEHOLDER);
   const [cpuChoose, setCPUChoose] = useState(utils.moves.PLACEHOLDER);
+  const [isAnimationEnd, setIsAnimationEnd] = useState(false);
   const [isChoosen, setIsChoosen] = useState(false);
 
   const [winnerGame, setWinnerGame] = useState(utils.winners.NONE);
@@ -23,7 +24,7 @@ const StartScreen = ({ handleScore }) => {
   }, [cpuChoose, playerMove]);
 
   const handlePlayerMove = async (e) => {
-    setPlayerMove(+e.target.value);
+    setPlayerMove(+e.currentTarget.value);
     setIsChoosen(true);
     setCPUChoose(await handleCPUChoose());
   };
@@ -52,48 +53,58 @@ const StartScreen = ({ handleScore }) => {
     setIsChoosen(false);
   };
 
+  const handleEndAnimation = async () => setIsAnimationEnd(true);
+
   return (
     <Wrapper>
-      {!isChoosen ? (
-        <ContentWrapper>
-          <MovesButton type={utils.moves.ROCK} onClick={handlePlayerMove} />
-          <MovesButton type={utils.moves.PAPER} onClick={handlePlayerMove} />
-          <MovesButton type={utils.moves.SCISSORS} onClick={handlePlayerMove} />
-
-          <Triangle src={bgTriangle} alt="Triangle" />
-        </ContentWrapper>
-      ) : (
-        <>
-          <GameWrapper>
+      <ContentWrapper isChoosen={isChoosen}>
+        {!isChoosen ? (
+          <>
+            <MovesButton type={utils.moves.ROCK} onClick={handlePlayerMove} />
+            <MovesButton type={utils.moves.PAPER} onClick={handlePlayerMove} />
+            <MovesButton
+              type={utils.moves.SCISSORS}
+              onClick={handlePlayerMove}
+            />
+            <Triangle src={bgTriangle} alt="Triangle" />
+          </>
+        ) : (
+          <>
             <ResultContainer>
-              <MovesButton type={playerMove} isAbs={false} hasWave />
+              <MovesButton hasWave type={playerMove} />
               <ResultText>YOU PICKED</ResultText>
             </ResultContainer>
             <ResultContainer>
-              <MovesButton type={cpuChoose} isAbs={false} />
+              <MovesButton
+                hasWave
+                wasPlaceholder
+                type={cpuChoose}
+                onAnimationEnd={handleEndAnimation}
+              />
               <ResultText>THE House picked</ResultText>
             </ResultContainer>
-          </GameWrapper>
-          <MatchResultContainer>
-            <MatchResult>
-              {winnerGame === utils.winners.PLAYER
-                ? "You win"
-                : winnerGame === utils.winners.CPU
-                ? "You lose"
-                : winnerGame === utils.winners.DRAW
-                ? "It's a tie"
-                : winnerGame === utils.winners.NONE
-                ? "choosing..."
-                : ""}
-            </MatchResult>
-            <MatchResultCTA
-              disabled={winnerGame === utils.winners.NONE}
-              onClick={handleNewGame}
-            >
-              Play again
-            </MatchResultCTA>
-          </MatchResultContainer>
-        </>
+          </>
+        )}
+      </ContentWrapper>
+      {isChoosen && (
+        <MatchResultContainer>
+          <MatchResult>
+            {!isAnimationEnd
+              ? "..."
+              : winnerGame === utils.winners.PLAYER
+              ? "You win"
+              : winnerGame === utils.winners.CPU
+              ? "You lose"
+              : winnerGame === utils.winners.DRAW
+              ? "It's a tie"
+              : winnerGame === utils.winners.NONE
+              ? "choosing..."
+              : ""}
+          </MatchResult>
+          <MatchResultCTA disabled={!isAnimationEnd} onClick={handleNewGame}>
+            Play again
+          </MatchResultCTA>
+        </MatchResultContainer>
       )}
     </Wrapper>
   );
@@ -104,25 +115,28 @@ export default StartScreen;
 const Wrapper = styled.div`
   display: grid;
   gap: 4rem;
+
+  user-select: none;
+`;
+
+const Triangle = styled.img`
+  width: 100%;
+  height: 100%;
+  z-index: -2;
 `;
 
 const ContentWrapper = styled.div`
+  width: ${({ isChoosen }) => (isChoosen ? "100%" : "auto")};
   margin: 0 auto;
   padding: 2rem;
   position: relative;
 
   display: flex;
-  justify-content: center;
-`;
+  justify-content: space-evenly;
 
-const GameWrapper = styled.div`
-  width: 100%;
-  margin: 0 auto;
-
-  display: grid;
-  grid-template-columns: repeat(2, 50%);
-
-  justify-items: center;
+  ${Triangle} {
+    visibility: ${({ isChoosen }) => (isChoosen ? "hidden" : "visible")};
+  }
 `;
 
 const ResultContainer = styled.div`
@@ -164,13 +178,10 @@ const MatchResult = styled.div`
 const MatchResultCTA = styled.button`
   font-size: 18px;
   padding: 0.9rem;
+  cursor: pointer;
+  font-weight: 700;
   border-radius: 8px;
   letter-spacing: 1px;
   background-color: #fff;
   text-transform: uppercase;
-`;
-
-const Triangle = styled.img`
-  width: 100%;
-  height: 100%;
 `;

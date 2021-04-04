@@ -94,7 +94,7 @@ const ScoreContent = styled.div`
 `;
 
 const ScoreText = styled.div`
-  font-size: 10px;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.7px;
   text-transform: uppercase;
